@@ -1,0 +1,24 @@
+{
+  "name": "orange-money-senegal",
+  "version": "1.0.0",
+  "description": "orange money api",
+  "main": "app.js",
+  "scripts": {
+    "test": "npm install",
+    "start": "node app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "orange-money-api"
+  },
+  "keywords": [
+    "orangemoney"
+  ],
+  "author": "hafsa-awan",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.20.0",
+    "node-fetch": "^2.7.0",
+    "node-rsa": "^1.1.1"
+  }
+}
