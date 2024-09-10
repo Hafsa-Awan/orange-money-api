@@ -1,0 +1,47 @@
+name: CI and Deploy to Railway
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Step 1: Check out the code
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # Step 2: Set up Node.js (since it's a Node.js API)
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '16'
+
+    # Step 3: Install Node.js dependencies for backend
+    - name: Install dependencies
+      run: npm install
+      working-directory: ./orange-backend
+
+    # Step 4: Run backend tests (if any)
+    - name: Run tests
+      run: npm test
+      working-directory: ./backend
+
+    # Step 5: Install Railway CLI
+    - name: Install Railway CLI
+      run: npm install -g railway
+
+    # Step 6: Authenticate Railway with API token (save token as GitHub secret)
+    - name: Railway login
+      run: railway login --token ${{ secrets.RAILWAY_API_TOKEN }}
+
+    # Step 7: Deploy to Railway (automatic deployment using Railway)
+    - name: Deploy to Railway
+      run: railway up
+      working-directory: ./orange-backend
