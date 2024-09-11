@@ -105,7 +105,7 @@ app.post('/encryptPin', (req, res) => {
         const rsa = new NodeRSA();
         
         // Prepare the key with the correct PEM format
-        const publicKey = `-----BEGIN PUBLIC KEY-----\n${key}\n-----END PUBLIC KEY-----`;
+        const publicKey = key;
         rsa.importKey(publicKey, 'public');
 
         // Encrypt the PIN code
