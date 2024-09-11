@@ -101,19 +101,21 @@ app.post('/encryptPin', (req, res) => {
     const { key, pinCode } = req.body;
 
     try {
-        // Create a new NodeRSA instance and import the public key
-        const key = new NodeRSA();
-        key.importKey(key, 'public');
+        // Create a new NodeRSA instance and import the public key (Ensure key format is correct)
+        const rsa = new NodeRSA();
+        
+        // Prepare the key with the correct PEM format
+        const publicKey = `-----BEGIN PUBLIC KEY-----\n${key}\n-----END PUBLIC KEY-----`;
+        rsa.importKey(publicKey, 'public');
 
         // Encrypt the PIN code
-        const encryptedPin = key.encrypt(pinCode, 'base64');
+        const encryptedPin = rsa.encrypt(pinCode, 'base64');
 
         res.json({ encryptedPin });
     } catch (error) {
         res.status(500).json({ error: 'Encryption error: ' + error.message });
     }
 });
-
 // Endpoint to request OTP
 app.post('/requestOtp', async (req, res) => {
     const { msisdn, encryptedPinCode, accessToken } = req.body;
