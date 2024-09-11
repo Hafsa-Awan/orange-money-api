@@ -23,7 +23,7 @@ app.post('/getAccessToken', async (req, res) => {
         if (response.status === 200) {
             res.json({ accessToken: data.access_token });
         } else {
-            res.status(response.status).json({ error: 'Failed to get access token '+$response.status });
+            res.status(response.status).json({ error: 'Failed to get access token '+$res.status });
         }
     } catch (error) {
         res.status(500).json({ error: 'Server error: ' + error.message });
