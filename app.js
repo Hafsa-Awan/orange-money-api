@@ -153,10 +153,13 @@ app.post('/requestOtp', async (req, res) => {
     }
 });
 
-// Endpoint to perform one-step payment
-app.post('/performOneStepPayment', async (req, res) => {
-    const { otp, msisdn, merchantCode, amount, correlationId, accessToken } = req.body;
+const { v4: uuidv4 } = require('uuid');
 
+app.post('/performOneStepPayment', async (req, res) => {
+    const { otp, msisdn, merchantCode, amount, accessToken } = req.body;
+
+    // Generate a unique correlationId
+    const correlationId = uuidv4();
     try {
         const response = await fetch('https://api.sandbox.orange-sonatel.com/api/eWallet/v1/payments/onestep', {
             method: 'POST',
