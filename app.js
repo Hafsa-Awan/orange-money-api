@@ -105,13 +105,13 @@ app.post('/encryptPin', (req, res) => {
     const { key, pinCode } = req.body;
 
     try {
-        // Ensure the public key is in the correct PEM format
-        const publicKey = `-----BEGIN PUBLIC KEY-----
-        ${key.match(/.{1,64}/g)}
-        -----END PUBLIC KEY-----`;
+        // Ensure the public key is in the correct PEM format with 64 character line breaks
+        const publicKey = `-----BEGIN PUBLIC KEY-----\n${key.match(/.{1,64}/g).join('\n')}\n-----END PUBLIC KEY-----`;
 
-        // Encrypt the PIN code using the public key
+        // Convert the PIN code to a buffer
         const buffer = Buffer.from(pinCode, 'utf8');
+
+        // Encrypt the PIN code using the public key and the correct RSA padding
         const encryptedPin = crypto.publicEncrypt({
             key: publicKey,
             padding: crypto.constants.RSA_PKCS1_PADDING
@@ -123,7 +123,6 @@ app.post('/encryptPin', (req, res) => {
         res.status(500).json({ error: 'Encryption error: ' + error.message });
     }
 });
-
 
 
 
