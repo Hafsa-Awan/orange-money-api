@@ -99,6 +99,7 @@ app.get('/generateTestNumber', async (req, res) => {
 // Endpoint to encrypt PIN using the public key
 
 const crypto = require('crypto');
+const crypto = require('crypto');
 
 app.post('/encryptPin', (req, res) => {
     const { key, pinCode } = req.body;
@@ -106,20 +107,23 @@ app.post('/encryptPin', (req, res) => {
     try {
         // Ensure the public key is in the correct PEM format
         const publicKey = `-----BEGIN PUBLIC KEY-----
-$key
------END PUBLIC KEY-----`;
+        ${key.match(/.{1,64}/g)}
+        -----END PUBLIC KEY-----`;
 
-         const publicKeyInstance = new NodeRSA(publicKey);
-          publicKeyInstance.importKey(publicKey, 'pkcs8-public');
-    const encryptedPin = publicKeyInstance.encrypt(pinCode, 'base64');
-    
+        // Encrypt the PIN code using the public key
+        const buffer = Buffer.from(pinCode, 'utf8');
+        const encryptedPin = crypto.publicEncrypt({
+            key: publicKey,
+            padding: crypto.constants.RSA_PKCS1_PADDING
+        }, buffer);
 
         // Respond with the encrypted PIN in base64 format
-        res.json({ encryptedPin: encryptedPin });
+        res.json({ encryptedPin: encryptedPin.toString('base64') });
     } catch (error) {
         res.status(500).json({ error: 'Encryption error: ' + error.message });
     }
 });
+
 
 
 
