@@ -118,7 +118,9 @@ app.post('/encryptPin', (req, res) => {
 });
 // Endpoint to request OTP
 app.post('/requestOtp', async (req, res) => {
-    const { msisdn, encryptedPinCode, accessToken } = req.body;
+        const authorizationHeader = req.headers.authorization;
+    const accessToken = authorizationHeader && authorizationHeader.split(' ')[1];
+    const { msisdn, encryptedPinCode } = req.body;
 
     try {
         const response = await fetch('https://api.sandbox.orange-sonatel.com/api/eWallet/v1/payments/otp', {
