@@ -97,7 +97,7 @@ app.get('/generateTestNumber', async (req, res) => {
 
 
 // Endpoint to encrypt PIN using the public key
-const NodeRSA = require('node-rsa');
+
 
 app.post('/encryptPin', (req, res) => {
     const { key, pinCode } = req.body;
