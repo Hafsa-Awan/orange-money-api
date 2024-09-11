@@ -65,14 +65,21 @@ app.post('/getPublicKey', async (req, res) => {
 
 // Endpoint to generate a test number
 app.get('/generateTestNumber', async (req, res) => {
-    const {accessToken} = req.headers.authorization;  // Get access token from the Authorization header
+    // Get the access token from the Authorization header, and strip the 'Bearer ' prefix
+    const authorizationHeader = req.headers.authorization;
+    const accessToken = authorizationHeader && authorizationHeader.split(' ')[1]; // Extract the token
+
     const { nbMerchants, nbCustomers } = req.query; // Extract query parameters from the URL
+
+    if (!accessToken) {
+        return res.status(401).json({ error: 'Missing or invalid access token' });
+    }
 
     try {
         const response = await fetch(`https://api.sandbox.orange-sonatel.com/api/assignments/v1/partner/sim-cards?nbMerchants=${nbMerchants}&nbCustomers=${nbCustomers}`, {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${accessToken}`,
+                'Authorization': `Bearer ${accessToken}`, // Pass the access token here
                 'Content-Type': 'application/json',
             },
         });
@@ -87,6 +94,7 @@ app.get('/generateTestNumber', async (req, res) => {
         res.status(500).json({ error: 'Server error: ' + error.message });
     }
 });
+
 
 // Endpoint to encrypt PIN using the public key
 app.post('/encryptPin', (req, res) => {
