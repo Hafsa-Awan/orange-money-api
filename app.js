@@ -127,7 +127,7 @@ app.post('/requestOtp', async (req, res) => {
                 'Authorization': `Bearer ${accessToken}`,
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ idType: 'MSISDN', id: msisdn, encryptedPinCode }),
+            body: JSON.stringify({ idType: 'MSISDN', id: msisdn, encryptedPinCode:encryptedPinCode  }),
         });
 
         const data = await response.json();
