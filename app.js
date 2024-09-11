@@ -65,7 +65,7 @@ app.post('/getPublicKey', async (req, res) => {
 
 // Endpoint to generate a test number
 app.get('/generateTestNumber', async (req, res) => {
-    const accessToken = req.headers.authorization;  // Get access token from the Authorization header
+    const {accessToken} = req.headers.authorization;  // Get access token from the Authorization header
     const { nbMerchants, nbCustomers } = req.query; // Extract query parameters from the URL
 
     try {
