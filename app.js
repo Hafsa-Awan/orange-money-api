@@ -20,12 +20,21 @@ app.post('/getAccessToken', async (req, res) => {
         });
 
         const data = await response.json();
+        
+        // Log the full response and data for debugging
+        console.log('Response status:', response.status);
+        console.log('Response body:', data);
+
         if (response.status === 200) {
             res.json({ accessToken: data.access_token });
         } else {
-            res.status(response.status).json({ error: 'Failed to get access token '+$res.status });
+            res.status(response.status).json({ 
+                error: 'Failed to get access token', 
+                details: data 
+            });
         }
     } catch (error) {
+        console.error('Error fetching access token:', error);  // Log the error for debugging
         res.status(500).json({ error: 'Server error: ' + error.message });
     }
 });
