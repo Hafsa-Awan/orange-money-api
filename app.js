@@ -97,25 +97,28 @@ app.get('/generateTestNumber', async (req, res) => {
 
 
 // Endpoint to encrypt PIN using the public key
+const NodeRSA = require('node-rsa');
+
 app.post('/encryptPin', (req, res) => {
     const { key, pinCode } = req.body;
 
     try {
-        // Create a new NodeRSA instance and import the public key (Ensure key format is correct)
-        const rsa = new NodeRSA();
-        
-        // Prepare the key with the correct PEM format
-        const publicKey = key;
-        rsa.importKey(publicKey, 'public');
+        // Construct the public key string in PEM format
+        const publicKey = `-----BEGIN PUBLIC KEY-----\n${key.match(/.{1,64}/g).join('\n')}\n-----END PUBLIC KEY-----`;
 
-        // Encrypt the PIN code
-        const encryptedPin = rsa.encrypt(pinCode, 'base64');
+        // Create a new NodeRSA instance and import the public key without any specific scheme
+        const rsa = new NodeRSA();
+        rsa.importKey(publicKey, 'pkcs8-public');  // 'pkcs8-public' matches the RSA key structure
+
+        // Encrypt the PIN code without padding
+        const encryptedPin = rsa.encrypt(pinCode, 'base64', 'utf8');
 
         res.json({ encryptedPin });
     } catch (error) {
         res.status(500).json({ error: 'Encryption error: ' + error.message });
     }
 });
+
 // Endpoint to request OTP
 app.post('/requestOtp', async (req, res) => {
         const authorizationHeader = req.headers.authorization;
