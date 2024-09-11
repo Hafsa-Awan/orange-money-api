@@ -110,6 +110,7 @@ $key
 -----END PUBLIC KEY-----`;
 
          const publicKeyInstance = new NodeRSA(publicKey);
+          publicKeyInstance.importKey(publicKey, 'pkcs8-public');
     const encryptedPin = publicKeyInstance.encrypt(pinCode, 'base64');
     
 
