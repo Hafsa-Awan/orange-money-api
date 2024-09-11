@@ -99,7 +99,7 @@ app.get('/generateTestNumber', async (req, res) => {
 // Endpoint to encrypt PIN using the public key
 
 const crypto = require('crypto');
-const crypto = require('crypto');
+
 
 app.post('/encryptPin', (req, res) => {
     const { key, pinCode } = req.body;
