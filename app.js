@@ -6,10 +6,7 @@ const NodeRSA = require('node-rsa');  // Import the Node-RSA library
 const app = express();
 app.use(bodyParser.json());
 
-// Set up the Orange API credentials (replace with your own)
-const client_id = '1a1c0ac0-1cc1-41f0-840c-e551c5396e72';
 
-const client_secret = 'c1053e00-be11-4c9b-8f03-ec9a6aee33f0';
 
 // Endpoint to obtain the access token
 app.post('/getAccessToken', async (req, res) => {
