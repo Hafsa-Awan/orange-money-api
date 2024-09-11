@@ -65,8 +65,9 @@ app.post('/getPublicKey', async (req, res) => {
 
 // Endpoint to generate a test number
 app.post('/generateTestNumber', async (req, res) => {
-    const { accessToken } = req.body;
 
+    const accessToken = req.headers.authorization;  // Get access token from the Authorization header
+    const { nbMerchants, nbCustomers } = req.query; 
     try {
         const response = await fetch('https://api.sandbox.orange-sonatel.com/api/assignments/v1/partner/sim-cards', {
             method: 'GET',
