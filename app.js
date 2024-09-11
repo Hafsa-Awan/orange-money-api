@@ -6,6 +6,8 @@ const NodeRSA = require('node-rsa');  // Import the Node-RSA library
 const app = express();
 app.use(bodyParser.json());
 
+const client_id = process.env.CLIENT_ID;
+const client_secret = process.env.CLIENT_SECRET;
 
 
 // Endpoint to obtain the access token
