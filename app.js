@@ -105,18 +105,21 @@ app.post('/encryptPin', (req, res) => {
 
     try {
         // Ensure the public key is in the correct PEM format
-        const publicKey = `-----BEGIN PUBLIC KEY-----\n${key.match(/.{1,64}/g).join('\n')}\n-----END PUBLIC KEY-----`;
+        const publicKey = `-----BEGIN PUBLIC KEY-----
+$key
+-----END PUBLIC KEY-----`;
 
-        // Encrypt the data (pinCode) using the provided public key
-        const buffer = Buffer.from(pinCode, 'utf8');
-        const encryptedPin = crypto.publicEncrypt(publicKey, buffer);
+         const publicKeyInstance = new NodeRSA(publicKey);
+    const encryptedPin = publicKeyInstance.encrypt(pinCode, 'base64');
+    
 
         // Respond with the encrypted PIN in base64 format
-        res.json({ encryptedPin: encryptedPin.toString('base64') });
+        res.json({ encryptedPin: encryptedPin });
     } catch (error) {
         res.status(500).json({ error: 'Encryption error: ' + error.message });
     }
 });
+
 
 
 // Endpoint to request OTP
