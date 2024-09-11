@@ -13,7 +13,7 @@ const client_secret = process.env.CLIENT_SECRET;
 // Endpoint to obtain the access token
 app.post('/getAccessToken', async (req, res) => {
     try {
-        const response = await fetch('https://api.sandbox.orange-sonatel.com/oauth2/token', {
+        const response = await fetch('https://api.sandbox.orange-sonatel.com/oauth/token', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: `grant_type=client_credentials&client_id=${client_id}&client_secret=${client_secret}`,
