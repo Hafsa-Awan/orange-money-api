@@ -160,6 +160,8 @@ app.post('/performOneStepPayment', async (req, res) => {
 
     // Generate a unique correlationId
     const correlationId = uuidv4();
+    console.log('Making request with correlationId:', correlationId); // Log the correlationId
+
     try {
         const response = await fetch('https://api.sandbox.orange-sonatel.com/api/eWallet/v1/payments/onestep', {
             method: 'POST',
@@ -184,6 +186,23 @@ app.post('/performOneStepPayment', async (req, res) => {
                 reference: correlationId
             }),
         });
+
+        // Log the response status and body
+        console.log('Response status:', response.status);
+        const data = await response.json();
+        console.log('Response body:', data);
+
+        if (response.status === 200) {
+            res.json({ paymentResult: data });
+        } else {
+            res.status(response.status).json({ error: data });
+        }
+    } catch (error) {
+        // Log the error
+        console.error('Server error:', error);
+        res.status(500).json({ error: 'Server error: ' + error.message });
+    }
+});
 
         const data = await response.json();
         if (response.status === 200) {
