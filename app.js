@@ -6,27 +6,35 @@ const NodeRSA = require('node-rsa');  // Import the Node-RSA library
 const app = express();
 app.use(bodyParser.json());
 
-// Set up the Orange API credentials (replace with your own)
-const client_id = '1a1c0ac0-1cc1-41f0-840c-e551c5396e72';
+const client_id = process.env.CLIENT_ID;
+const client_secret = process.env.CLIENT_SECRET;
 
-const client_secret = 'c1053e00-be11-4c9b-8f03-ec9a6aee33f0';
 
 // Endpoint to obtain the access token
 app.post('/getAccessToken', async (req, res) => {
     try {
-        const response = await fetch('https://api.sandbox.orange-sonatel.com/oauth2/token', {
+        const response = await fetch('https://api.sandbox.orange-sonatel.com/oauth/token', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: `grant_type=client_credentials&client_id=${client_id}&client_secret=${client_secret}`,
         });
 
         const data = await response.json();
+
+        // Log the full response and data for debugging
+        console.log('Response status:', response.status);
+        console.log('Response body:', data);
+
         if (response.status === 200) {
             res.json({ accessToken: data.access_token });
         } else {
-            res.status(response.status).json({ error: 'Failed to get access token' });
+            res.status(response.status).json({
+                error: 'Failed to get access token',
+                details: data
+            });
         }
     } catch (error) {
+        console.error('Error fetching access token:', error);  // Log the error for debugging
         res.status(500).json({ error: 'Server error: ' + error.message });
     }
 });
@@ -56,17 +64,24 @@ app.post('/getPublicKey', async (req, res) => {
 });
 
 // Endpoint to generate a test number
-app.post('/generateTestNumber', async (req, res) => {
-    const { accessToken } = req.body;
+app.get('/generateTestNumber', async (req, res) => {
+    // Get the access token from the Authorization header, and strip the 'Bearer ' prefix
+    const authorizationHeader = req.headers.authorization;
+    const accessToken = authorizationHeader && authorizationHeader.split(' ')[1]; // Extract the token
+
+    const { nbMerchants, nbCustomers } = req.query; // Extract query parameters from the URL
+
+    if (!accessToken) {
+        return res.status(401).json({ error: 'Missing or invalid access token' });
+    }
 
     try {
-        const response = await fetch('https://api.sandbox.orange-sonatel.com/api/assignments/v1/partner/sim-cards', {
+        const response = await fetch(`https://api.sandbox.orange-sonatel.com/api/assignments/v1/partner/sim-cards?nbMerchants=${nbMerchants}&nbCustomers=${nbCustomers}`, {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${accessToken}`,
+                'Authorization': `Bearer ${accessToken}`, // Pass the access token here
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ nbMerchants: 1, nbCustomers: 1 }),
         });
 
         const data = await response.json();
@@ -80,27 +95,42 @@ app.post('/generateTestNumber', async (req, res) => {
     }
 });
 
+
 // Endpoint to encrypt PIN using the public key
+
+const crypto = require('crypto');
+
+
 app.post('/encryptPin', (req, res) => {
     const { key, pinCode } = req.body;
 
     try {
-        // Create a new NodeRSA instance and import the public key
-        const key = new NodeRSA();
-        key.importKey(key, 'public');
+        // Ensure the public key is in the correct PEM format with 64 character line breaks
+        const publicKey = `-----BEGIN PUBLIC KEY-----\n${key.match(/.{1,64}/g).join('\n')}\n-----END PUBLIC KEY-----`;
 
-        // Encrypt the PIN code
-        const encryptedPin = key.encrypt(pinCode, 'base64');
+        // Convert the PIN code to a buffer
+        const buffer = Buffer.from(pinCode, 'utf8');
 
-        res.json({ encryptedPin });
+        // Encrypt the PIN code using the public key and the correct RSA padding
+        const encryptedPin = crypto.publicEncrypt({
+            key: publicKey,
+            padding: crypto.constants.RSA_PKCS1_PADDING
+        }, buffer);
+
+        // Respond with the encrypted PIN in base64 format
+        res.json({ encryptedPin: encryptedPin.toString('base64') });
     } catch (error) {
         res.status(500).json({ error: 'Encryption error: ' + error.message });
     }
 });
 
+
+
 // Endpoint to request OTP
 app.post('/requestOtp', async (req, res) => {
-    const { msisdn, encryptedPinCode, accessToken } = req.body;
+        const authorizationHeader = req.headers.authorization;
+    const accessToken = authorizationHeader && authorizationHeader.split(' ')[1];
+    const { msisdn, encryptedPinCode } = req.body;
 
     try {
         const response = await fetch('https://api.sandbox.orange-sonatel.com/api/eWallet/v1/payments/otp', {
@@ -109,7 +139,7 @@ app.post('/requestOtp', async (req, res) => {
                 'Authorization': `Bearer ${accessToken}`,
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ idType: 'MSISDN', id: msisdn, encryptedPinCode }),
+            body: JSON.stringify({ idType: 'MSISDN', id: msisdn, encryptedPinCode: encryptedPinCode}),
         });
 
         const data = await response.json();
@@ -123,10 +153,13 @@ app.post('/requestOtp', async (req, res) => {
     }
 });
 
-// Endpoint to perform one-step payment
-app.post('/performOneStepPayment', async (req, res) => {
-    const { otp, msisdn, merchantCode, amount, correlationId, accessToken } = req.body;
+const { v4: uuidv4 } = require('uuid');
 
+app.post('/performOneStepPayment', async (req, res) => {
+    const { otp, msisdn, merchantCode, amount, accessToken } = req.body;
+
+    // Generate a unique correlationId
+    const correlationId = uuidv4();
     try {
         const response = await fetch('https://api.sandbox.orange-sonatel.com/api/eWallet/v1/payments/onestep', {
             method: 'POST',
