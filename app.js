@@ -3,6 +3,8 @@ const fetch = require('node-fetch');
 const bodyParser = require('body-parser');
 const NodeRSA = require('node-rsa');  // Import the Node-RSA library
 
+const { v4: uuidv4 } = require('uuid');
+
 const app = express();
 app.use(bodyParser.json());
 
@@ -153,8 +155,6 @@ app.post('/requestOtp', async (req, res) => {
     }
 });
 
-const { v4: uuidv4 } = require('uuid');
-
 app.post('/performOneStepPayment', async (req, res) => {
     const { otp, msisdn, merchantCode, amount, accessToken } = req.body;
 
@@ -203,18 +203,6 @@ app.post('/performOneStepPayment', async (req, res) => {
         res.status(500).json({ error: 'Server error: ' + error.message });
     }
 });
-
-        const data = await response.json();
-        if (response.status === 200) {
-            res.json({ paymentResult: data });
-        } else {
-            res.status(response.status).json({ error: data });
-        }
-    } catch (error) {
-        res.status(500).json({ error: 'Server error: ' + error.message });
-    }
-});
-
 // Start the server
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
