@@ -88,7 +88,7 @@ app.get('/generateTestNumber', async (req, res) => {
 
         const data = await response.json();
         if (response.status === 200) {
-            res.json({ msisdn: data[1].msisdn, pinCode: data[1].pinCode });
+            res.json({merchantCode: data[0].merchantCode, msisdn: data[1].msisdn, pinCode: data[1].pinCode });
         } else {
             res.status(response.status).json({ error: 'Failed to generate test number' });
         }
